@@ -1,0 +1,16 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+body {
+  background: #eef1f6;
+  color: #1f2430;
+}
+
+.panel {
+  @apply rounded-xl border border-border bg-card;
+}

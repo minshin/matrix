@@ -1,0 +1,107 @@
+graph_id: hormuz_blockade_7d
+name: 霍尔木兹海峡封锁风险（7天）
+version: 1
+
+sources:
+  - url: "https://www.reuters.com/world/middle-east/"
+    method: jina
+    tags: ["military", "iran", "hormuz"]
+  - url: "https://oilprice.com/"
+    method: httpx
+    tags: ["energy", "oil", "shipping"]
+  - url: "https://www.aljazeera.com/news/"
+    method: jina
+    tags: ["military", "diplomacy"]
+
+topic: "霍尔木兹海峡封锁风险"
+
+layers:
+  - id: P1
+    label: 基础事件层
+    nodes:
+      - id: e_iran_rhetoric
+        label: 伊朗对外强硬声明频率上升
+        observation_tags: ["military", "iran"]
+      - id: e_us_navy_presence
+        label: 美军在波斯湾军事存在增强
+        observation_tags: ["military", "hormuz"]
+      - id: e_tanker_anomaly
+        label: 油轮通行出现异常
+        observation_tags: ["shipping", "hormuz"]
+      - id: e_diplomacy_stalled
+        label: 外交渠道受阻
+        observation_tags: ["diplomacy", "iran"]
+      - id: e_energy_panic
+        label: 能源市场出现恐慌信号
+        observation_tags: ["energy", "oil"]
+
+  - id: P2
+    label: 一阶推论层
+    nodes:
+      - id: e_military_escalation
+        label: 地区军事对峙升级
+        inputs:
+          - node: e_iran_rhetoric
+            weight: 0.4
+          - node: e_us_navy_presence
+            weight: 0.4
+          - node: e_diplomacy_stalled
+            weight: 0.2
+
+      - id: e_transport_risk
+        label: 能源运输风险显著上升
+        inputs:
+          - node: e_us_navy_presence
+            weight: 0.3
+          - node: e_tanker_anomaly
+            weight: 0.4
+          - node: e_energy_panic
+            weight: 0.3
+
+      - id: e_diplomacy_insufficient
+        label: 国际外交缓解力度不足
+        inputs:
+          - node: e_diplomacy_stalled
+            weight: 0.6
+          - node: e_iran_rhetoric
+            weight: 0.4
+
+  - id: P3
+    label: 二阶推论层
+    nodes:
+      - id: e_blockade_precursor
+        label: 封锁行动出现明显前兆
+        inputs:
+          - node: e_military_escalation
+            weight: 0.5
+          - node: e_transport_risk
+            weight: 0.5
+
+      - id: e_diplomacy_window_closed
+        label: 外交缓解窗口实质性关闭
+        inputs:
+          - node: e_military_escalation
+            weight: 0.4
+          - node: e_diplomacy_insufficient
+            weight: 0.6
+
+conclusions:
+  - id: c_blockade_7d
+    label: 未来7天霍尔木兹海峡通行受阻概率
+    inputs:
+      - node: e_blockade_precursor
+        weight: 0.5
+      - node: e_diplomacy_window_closed
+        weight: 0.3
+      - node: e_transport_risk
+        weight: 0.2
+
+  - id: c_blockade_30d
+    label: 未来30天封锁正式启动概率
+    inputs:
+      - node: e_blockade_precursor
+        weight: 0.4
+      - node: e_diplomacy_window_closed
+        weight: 0.4
+      - node: e_military_escalation
+        weight: 0.2
